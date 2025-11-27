@@ -404,7 +404,7 @@
   <div class="auction-container">
     <!-- Header -->
     <div class="auction-header">
-      <div class="auction-title">🔴 LIVE AUCTION</div>
+      <div class="auction-title">🔴 By yuzuru</div>
       <div class="auction-status waiting" id="statusBadge">Menunggu Lelang...</div>
     </div>
 
@@ -617,28 +617,38 @@
     }
 
     function handleGift(data) {
-      const bidAmount = data.diamondCount;
-      const username = data.nickname || data.username;
+  const bidAmount = data.diamondCount;
+  const username = data.nickname || data.username;
 
-      // Only accept bids higher than starting bid
-      if (bidAmount < startingBid) return;
+  if (bidAmount < startingBid) return;
 
-      // Update user total
-      const currentTotal = userTotals.get(username) || 0;
-      const newTotal = currentTotal + bidAmount;
-      userTotals.set(username, newTotal);
+  // 1. Update total poin user
+  const newTotal = (userTotals.get(username) || 0) + bidAmount;
+  userTotals.set(username, newTotal);
 
-      // Update highest bid (based on single bid, not total)
-      if (bidAmount > highestBid) {
-        highestBid = bidAmount;
-        currentWinner = username;
-        updateWinner('active', true);
-      } else {
-        updateWinner('active', false);
-      }
+  // 2. Hitung ulang semua user berdasarkan total tertinggi
+  const sorted = Array.from(userTotals.entries())
+    .sort((a, b) => b[1] - a[1]);
 
-      updateLeaderboard();
-    }
+  const topUser = sorted[0][0];
+  const topTotal = sorted[0][1];
+
+  // 3. Tentukan apakah butuh animasi
+  const isNewWinner =
+        currentWinner !== topUser ||        // winner berubah
+        highestBid !== topTotal;            // poin winner bertambah
+
+  // 4. Update data winner
+  currentWinner = topUser;
+  highestBid = topTotal;
+
+  // 5. Tampilkan winner + animasi
+  updateWinner("active", isNewWinner);
+
+  // 6. Update leaderboard
+  updateLeaderboard();
+}
+
 
     function updateWinner(state, isNewHighest = false) {
       const winnerSection = document.getElementById('winnerSection');

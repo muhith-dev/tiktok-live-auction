@@ -448,7 +448,7 @@
             <h3>Item Information</h3>
             <div class="form-group">
               <label>Nama Item</label>
-              <input type="text" id="itemName" placeholder="Contoh: iPhone 15 Pro Max">
+              <input type="text" id="itemName" value="Lelang",placeholder="Contoh: iPhone 15 Pro Max">
             </div>
 
             <div class="setup-grid" style="margin-top: 15px;">
@@ -465,7 +465,7 @@
             <div class="setup-grid" style="margin-top: 15px;">
               <div class="form-group">
                 <label>Starting Bid (💎)</label>
-                <input type="number" id="startingBid" value="100" min="1">
+                <input type="number" id="startingBid" value="0" min="1">
               </div>
               <div class="form-group">
                 <label>Durasi (detik)</label>
@@ -854,40 +854,38 @@
     // ========== GIFT HANDLER ==========
 
     function handleGift(data) {
-      const bidAmount = data.diamondCount;
-      const username = data.nickname || data.username;
+  const bidAmount = data.diamondCount;
+  const username = data.nickname || data.username;
 
-      // Only accept bids >= starting bid
-      if (bidAmount < startingBidValue) return;
+  if (bidAmount < startingBidValue) return;
 
-      const bid = {
-        username: username,
-        giftName: data.giftName,
-        amount: bidAmount,
-        timestamp: new Date().toLocaleTimeString('id-ID')
-      };
+  const bid = {
+    username: username,
+    giftName: data.giftName,
+    amount: bidAmount,
+    timestamp: new Date().toLocaleTimeString('id-ID')
+  };
 
-      allBids.unshift(bid);
+  allBids.unshift(bid);
 
-      // Update user total
-      const currentTotal = userTotals.get(username) || 0;
-      const newTotal = currentTotal + bidAmount;
-      userTotals.set(username, newTotal);
+  // Update user total
+  const currentTotal = userTotals.get(username) || 0;
+  const newTotal = currentTotal + bidAmount;
+  userTotals.set(username, newTotal);
 
-      // Update highest bid (based on single bid)
-      if (bidAmount > highestBid) {
-        highestBid = bidAmount;
-        currentWinner = username;
-      }
+  // Update highest bid (based on single bid)
+  if (bidAmount > highestBid) {
+    highestBid = bidAmount;
+    currentWinner = username;
+  }
 
-      // Send to widget with auction active flag
-      ws.send(JSON.stringify({
-        ...data,
-        auctionActive: true
-      }));
+  ws.send(JSON.stringify({
+    ...data,
+    auctionActive: true
+  }));
 
-      updateUI();
-    }
+  updateUI();
+}
 
     function handleChat(data) {
       const chat = {
