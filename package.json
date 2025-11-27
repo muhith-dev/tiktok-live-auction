@@ -1,0 +1,26 @@
+{
+  "name": "tiktok-live-auction-backend",
+  "version": "1.0.0",
+  "description": "Backend server untuk TikTok Live Auction Widget",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "tiktok",
+    "live",
+    "auction",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "tiktok-live-connector": "^2.1.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

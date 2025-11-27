@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Live Auction - OBS Widget</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: transparent;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Container Auction - Portrait Optimized */
+    .auction-container {
+      width: 350px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 3px solid #ff0050;
+      border-radius: 20px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 8px 32px rgba(255, 0, 80, 0.4);
+    }
+
+    /* Header */
+    .auction-header {
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #ff0050;
+    }
+
+    .auction-title {
+      font-size: 24px;
+      color: #ff0050;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+
+    .auction-status {
+      font-size: 12px;
+      color: #aaa;
+      text-transform: uppercase;
+    }
+
+    .auction-status.waiting {
+      color: #f39c12;
+    }
+
+    .auction-status.active {
+      color: #2ecc71;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Item Info */
+    .item-info {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #00d4ff;
+      text-align: center;
+    }
+
+    .item-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 8px;
+      min-height: 25px;
+    }
+
+    .item-name.placeholder {
+      color: #666;
+      font-style: italic;
+      font-size: 16px;
+    }
+
+    .item-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 8px;
+    }
+
+    /* Timer */
+    .timer {
+      background: #d63031;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 28px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .timer.active {
+      display: block;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .timer.warning {
+      background: #e74c3c;
+      animation: fastPulse 0.5s infinite;
+    }
+
+    @keyframes fastPulse {
+      0%, 100% {
+        transform: scale(1);
+        background: #e74c3c;
+      }
+      50% {
+        transform: scale(1.08);
+        background: #c0392b;
+      }
+    }
+
+    /* Current Winner Display */
+    .current-winner {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 3px solid #ffd700;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .winner-label {
+      font-size: 12px;
+      color: #ffd700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .winner-name {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .winner-bid {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffd700;
+      text-align: center;
+    }
+
+    /* Placeholder states */
+    .waiting-state {
+      text-align: center;
+      color: #f39c12;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .no-winner {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .leaderboard h3 {
+      font-size: 12px;
+      color: #ff0050;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .leaderboard-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideInBid 0.3s ease-out;
+    }
+
+    .leaderboard-item.rank-1 {
+      background: rgba(255, 215, 0, 0.15);
+      border: 2px solid #ffd700;
+    }
+
+    .leaderboard-item.rank-2 {
+      background: rgba(192, 192, 192, 0.15);
+      border: 2px solid #c0c0c0;
+    }
+
+    .leaderboard-item.rank-3 {
+      background: rgba(205, 127, 50, 0.15);
+      border: 2px solid #cd7f32;
+    }
+
+    .rank-number {
+      font-size: 18px;
+      font-weight: bold;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .rank-1 .rank-number {
+      color: #ffd700;
+    }
+
+    .rank-2 .rank-number {
+      color: #c0c0c0;
+    }
+
+    .rank-3 .rank-number {
+      color: #cd7f32;
+    }
+
+    .leaderboard-item:not(.rank-1):not(.rank-2):not(.rank-3) .rank-number {
+      color: #00d4ff;
+    }
+
+    .leaderboard-item:not(.rank-1):not(.rank-2):not(.rank-3) {
+      border-left: 3px solid #00d4ff;
+    }
+
+    @keyframes slideInBid {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .leaderboard-user {
+      flex: 1;
+      font-size: 13px;
+      font-weight: bold;
+      color: #ffffff;
+      word-break: break-word;
+    }
+
+    .leaderboard-total {
+      font-size: 15px;
+      color: #ffd700;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .leaderboard-placeholder {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      padding: 15px;
+    }
+
+    /* Scrollbar */
+    .leaderboard::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .leaderboard::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .leaderboard::-webkit-scrollbar-thumb {
+      background: #ff0050;
+      border-radius: 10px;
+    }
+
+    /* New Highest Bid Animation */
+    @keyframes bidPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 0 20px rgba(255, 215, 0, 0);
+      }
+    }
+
+    .new-highest-bid {
+      animation: bidPulse 1s ease-out;
+    }
+
+    /* Auction Ended State */
+    .auction-ended {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      animation: zoomIn 0.5s ease-out;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .auction-ended h2 {
+      font-size: 24px;
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    .auction-ended .final-winner {
+      font-size: 20px;
+      color: #ffd700;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .auction-ended .final-bid {
+      font-size: 36px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .auction-ended.no-bids {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .auction-ended.no-bids h2 {
+      font-size: 20px;
+    }
+
+    /* Responsive for different portrait sizes */
+    @media (max-height: 700px) {
+      .auction-container {
+        width: 300px;
+        padding: 15px;
+      }
+
+      .auction-title {
+        font-size: 20px;
+      }
+
+      .item-name {
+        font-size: 18px;
+      }
+
+      .timer {
+        font-size: 24px;
+        padding: 10px;
+      }
+
+      .winner-bid {
+        font-size: 28px;
+      }
+
+      .recent-bids {
+        max-height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auction-container">
+    <!-- Header -->
+    <div class="auction-header">
+      <div class="auction-title">🔴 LIVE AUCTION</div>
+      <div class="auction-status waiting" id="statusBadge">Menunggu Lelang...</div>
+    </div>
+
+    <!-- Item Info -->
+    <div class="item-info">
+      <div class="item-name placeholder" id="itemName">Menunggu item...</div>
+      <div class="item-details">
+        <span>Item <span id="currentItem">-</span> of <span id="totalItems">-</span></span>
+        <span>Start: <span id="startingBid">-</span> 🪙</span>
+      </div>
+    </div>
+
+    <!-- Timer (hidden by default) -->
+    <div class="timer" id="timer">⏱️ 00:00</div>
+
+    <!-- Current Winner Display -->
+    <div class="current-winner" id="winnerSection">
+      <div class="waiting-state">⏳ Menunggu lelang dimulai...</div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="leaderboard">
+      <h3>🏆 Top Bidders</h3>
+      <div id="leaderboardList">
+        <div class="leaderboard-placeholder">Belum ada bid</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let currentWinner = null;
+    let highestBid = 0;
+    let startingBid = 0;
+    const userTotals = new Map(); // Track total per user
+    const MAX_LEADERBOARD = 5;
+    
+    let timerInterval = null;
+    let endTime = null;
+    let auctionState = 'waiting'; // waiting, active, ended
+
+    // Connect to WebSocket Server
+    function connect() {
+      ws = new WebSocket('ws://localhost:8081');
+
+      ws.onopen = () => {
+        console.log('✅ Connected to server');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        // Auction control messages
+        if (data.type === 'auction_start') {
+          startAuction(data);
+        }
+
+        if (data.type === 'auction_stop') {
+          stopAuction();
+        }
+
+        if (data.type === 'auction_end') {
+          endAuction(data);
+        }
+
+        if (data.type === 'auction_reset') {
+          resetAuction();
+        }
+
+        // Gift handler
+        if (data.type === 'gift' && auctionState === 'active') {
+          handleGift(data);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('Connection closed, reconnecting...');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+
+    function updateStatus(state, text) {
+      const statusBadge = document.getElementById('statusBadge');
+      auctionState = state;
+      
+      statusBadge.className = 'auction-status ' + state;
+      statusBadge.textContent = text;
+    }
+
+    function startAuction(data) {
+      updateStatus('active', '🔥 Lelang Aktif');
+
+      // Set item info
+      const itemNameEl = document.getElementById('itemName');
+      itemNameEl.textContent = data.itemName || 'Item Auction';
+      itemNameEl.classList.remove('placeholder');
+      
+      document.getElementById('currentItem').textContent = data.currentItem || 1;
+      document.getElementById('totalItems').textContent = data.totalItems || 1;
+      document.getElementById('startingBid').textContent = data.startingBid || 0;
+
+      startingBid = data.startingBid || 0;
+      highestBid = startingBid;
+      currentWinner = null;
+      userTotals.clear();
+
+      updateWinner('active');
+      updateLeaderboard();
+
+      // Show and start timer
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.add('active');
+      
+      if (data.duration) {
+        endTime = Date.now() + (data.duration * 1000);
+        startTimer();
+      }
+    }
+
+    function stopAuction() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function endAuction(data) {
+      stopAuction();
+      updateStatus('ended', '⏱️ Lelang Selesai');
+      
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.remove('active');
+
+      const winnerSection = document.getElementById('winnerSection');
+
+      if (currentWinner && highestBid > startingBid) {
+        winnerSection.innerHTML = `
+          <div class="auction-ended">
+            <h2>🎉 PEMENANG! 🎉</h2>
+            <div class="final-winner">${currentWinner}</div>
+            <div class="final-bid">${highestBid} 🪙</div>
+          </div>
+        `;
+      } else {
+        winnerSection.innerHTML = `
+          <div class="auction-ended no-bids">
+            <h2>⏱️ WAKTU HABIS</h2>
+            <div style="font-size: 16px; color: white;">Tidak ada pemenang</div>
+          </div>
+        `;
+      }
+
+      // Don't auto-hide, stay on screen
+    }
+
+    function resetAuction() {
+      stopAuction();
+      updateStatus('waiting', 'Menunggu Lelang...');
+      
+      currentWinner = null;
+      highestBid = 0;
+      startingBid = 0;
+      userTotals.clear();
+      
+      // Reset item info
+      const itemNameEl = document.getElementById('itemName');
+      itemNameEl.textContent = 'Menunggu item...';
+      itemNameEl.classList.add('placeholder');
+      
+      document.getElementById('currentItem').textContent = '-';
+      document.getElementById('totalItems').textContent = '-';
+      document.getElementById('startingBid').textContent = '-';
+      
+      // Hide timer
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.remove('active', 'warning');
+      timerEl.textContent = '⏱️ 00:00';
+      
+      updateWinner('waiting');
+      updateLeaderboard();
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        const remaining = Math.max(0, endTime - Date.now());
+        const seconds = Math.floor(remaining / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `⏱️ ${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        // Warning when less than 10 seconds
+        if (seconds <= 10 && seconds > 0) {
+          timerEl.classList.add('warning');
+        } else {
+          timerEl.classList.remove('warning');
+        }
+
+        if (remaining === 0) {
+          clearInterval(timerInterval);
+        }
+      }, 100);
+    }
+
+    function handleGift(data) {
+      const bidAmount = data.diamondCount;
+      const username = data.nickname || data.username;
+
+      // Only accept bids higher than starting bid
+      if (bidAmount < startingBid) return;
+
+      // Update user total
+      const currentTotal = userTotals.get(username) || 0;
+      const newTotal = currentTotal + bidAmount;
+      userTotals.set(username, newTotal);
+
+      // Update highest bid (based on single bid, not total)
+      if (bidAmount > highestBid) {
+        highestBid = bidAmount;
+        currentWinner = username;
+        updateWinner('active', true);
+      } else {
+        updateWinner('active', false);
+      }
+
+      updateLeaderboard();
+    }
+
+    function updateWinner(state, isNewHighest = false) {
+      const winnerSection = document.getElementById('winnerSection');
+      
+      if (state === 'waiting') {
+        winnerSection.innerHTML = '<div class="waiting-state">⏳ Menunggu lelang dimulai...</div>';
+        return;
+      }
+
+      if (state === 'active') {
+        if (!currentWinner || highestBid <= startingBid) {
+          winnerSection.innerHTML = '<div class="no-winner">Menunggu bid pertama...</div>';
+          return;
+        }
+
+        winnerSection.innerHTML = `
+          <div class="winner-label">🏆 CURRENT WINNER</div>
+          <div class="winner-name">${currentWinner}</div>
+          <div class="winner-bid">${highestBid} 🪙</div>
+        `;
+
+        if (isNewHighest) {
+          winnerSection.classList.add('new-highest-bid');
+          setTimeout(() => {
+            winnerSection.classList.remove('new-highest-bid');
+          }, 1000);
+        }
+      }
+    }
+
+    function updateLeaderboard() {
+      const leaderboardList = document.getElementById('leaderboardList');
+      
+      if (userTotals.size === 0) {
+        leaderboardList.innerHTML = '<div class="leaderboard-placeholder">Belum ada bid</div>';
+        return;
+      }
+
+      // Convert Map to array and sort by total (descending)
+      const sortedUsers = Array.from(userTotals.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, MAX_LEADERBOARD);
+
+      leaderboardList.innerHTML = sortedUsers.map(([username, total], index) => {
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        
+        return `
+          <div class="leaderboard-item ${rankClass}">
+            <div class="rank-number">#${rank}</div>
+            <div class="leaderboard-user">${username}</div>
+            <div class="leaderboard-total">${total} 🪙</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Auto connect on load
+    connect();
+  </script>
+</body>
+</html>

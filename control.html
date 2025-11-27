@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Live Auction - Control Panel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h2 {
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #667eea;
+    }
+
+    /* Connection Section */
+    .connection-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      color: #555;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .status-indicator.disconnected {
+      background: #fee;
+      color: #c33;
+    }
+
+    .status-indicator.connected {
+      background: #efe;
+      color: #3c3;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.red {
+      background: #c33;
+    }
+
+    .status-dot.green {
+      background: #3c3;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-danger {
+      background: #d63031;
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+    }
+
+    .btn-success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #27ae60;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+    }
+
+    .btn-warning {
+      background: #f39c12;
+      color: white;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: #e67e22;
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Auction Setup Section */
+    .auction-setup {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .auction-setup h3 {
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    /* Auction Control Buttons */
+    .control-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    /* Current Auction Status */
+    .auction-status {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      border-radius: 10px;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .auction-status h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .status-item {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .status-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+
+    .status-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    /* Winner Display */
+    .winner-display {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .winner-display h3 {
+      color: #333;
+      font-size: 14px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .winner-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .winner-amount {
+      font-size: 32px;
+      font-weight: bold;
+      color: #d63031;
+    }
+
+    .no-winner {
+      color: #666;
+      font-style: italic;
+      padding: 30px;
+    }
+
+    /* Bids List */
+    .bids-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .bid-row {
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .bid-row:hover {
+      background: #f8f9fa;
+    }
+
+    .bid-row.highest {
+      background: #fff9e6;
+      border-left: 4px solid #ffd700;
+    }
+
+    .bid-info {
+      flex: 1;
+    }
+
+    .bid-username {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 3px;
+    }
+
+    .bid-gift {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .bid-amount {
+      font-size: 20px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .bid-time {
+      font-size: 11px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    /* Timer Display */
+    .timer-display {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .timer-display.warning {
+      color: #ff4444;
+      animation: timerPulse 0.5s infinite;
+    }
+
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Scrollbar */
+    .bids-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .bids-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .bids-list::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .setup-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 TikTok Live Auction Control Panel</h1>
+      <p>Kelola lelang live TikTok Anda secara real-time</p>
+    </div>
+
+    <div class="main-content">
+      <!-- Left Column: Connection & Auction Setup -->
+      <div>
+        <!-- Connection Card -->
+        <div class="card">
+          <h2>🔌 Koneksi TikTok Live</h2>
+          
+          <div class="status-indicator disconnected" id="statusIndicator">
+            <span class="status-dot red"></span>
+            <span id="statusText">Belum terhubung</span>
+          </div>
+
+          <div class="connection-form">
+            <div class="form-group">
+              <label for="username">Username TikTok (tanpa @)</label>
+              <input 
+                type="text" 
+                id="username" 
+                placeholder="Contoh: namauser"
+                autocomplete="off"
+              >
+            </div>
+
+            <button class="btn btn-primary" id="connectBtn" onclick="connectToLive()">
+              🚀 Hubungkan ke Live
+            </button>
+
+            <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectFromLive()" style="display: none;">
+              ⛔ Putuskan Koneksi
+            </button>
+          </div>
+        </div>
+
+        <!-- Auction Setup Card -->
+        <div class="card" style="margin-top: 20px;">
+          <h2>⚙️ Setup Lelang</h2>
+          
+          <div class="auction-setup">
+            <h3>Item Information</h3>
+            <div class="form-group">
+              <label>Nama Item</label>
+              <input type="text" id="itemName" placeholder="Contoh: iPhone 15 Pro Max">
+            </div>
+
+            <div class="setup-grid" style="margin-top: 15px;">
+              <div class="form-group">
+                <label>Item ke-</label>
+                <input type="number" id="currentItem" value="1" min="1">
+              </div>
+              <div class="form-group">
+                <label>Total Item</label>
+                <input type="number" id="totalItems" value="1" min="1">
+              </div>
+            </div>
+
+            <div class="setup-grid" style="margin-top: 15px;">
+              <div class="form-group">
+                <label>Starting Bid (💎)</label>
+                <input type="number" id="startingBid" value="100" min="1">
+              </div>
+              <div class="form-group">
+                <label>Durasi (detik)</label>
+                <input type="number" id="duration" value="60" min="10">
+              </div>
+            </div>
+          </div>
+
+          <div class="control-buttons">
+            <button class="btn btn-success" onclick="startAuction()" id="startBtn" disabled>
+              ▶️ Start Lelang
+            </button>
+            <button class="btn btn-danger" onclick="stopAuction()" id="stopBtn" disabled>
+              ⏹️ Stop Lelang
+            </button>
+            <button class="btn btn-warning" onclick="nextItem()" id="nextBtn" disabled>
+              ⏭️ Item Berikutnya
+            </button>
+            <button class="btn btn-primary" onclick="resetAuction()" id="resetBtn" disabled>
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Card -->
+        <div class="card" style="margin-top: 20px;">
+          <h2>💬 Live Chat</h2>
+          <div class="chat-list" id="chatList">
+            <p style="text-align: center; color: #999; padding: 20px;">
+              Menunggu pesan chat...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Auction Status & Bids -->
+      <div>
+        <!-- Auction Status Card -->
+        <div class="card">
+          <h2>📊 Status Lelang</h2>
+          
+          <div class="auction-status">
+            <h3 id="auctionStatusText">⏸️ Lelang Belum Dimulai</h3>
+            
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            
+            <div class="status-grid">
+              <div class="status-item">
+                <div class="status-label">Total Bids</div>
+                <div class="status-value" id="totalBids">0</div>
+              </div>
+              <div class="status-item">
+                <div class="status-label">Highest Bid</div>
+                <div class="status-value" id="highestBidStat">0 💎</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="winner-display" id="winnerDisplay">
+            <div class="no-winner">Belum ada pemenang</div>
+          </div>
+        </div>
+
+        <!-- Bids History Card -->
+        <div class="card" style="margin-top: 20px;">
+          <h2>🏆 Leaderboard - Total Coins</h2>
+          <div class="bids-list" id="bidsList">
+            <p style="text-align: center; color: #999; padding: 40px;">
+              Belum ada bid masuk
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let isConnected = false;
+    let auctionActive = false;
+    let currentUsername = null;
+    
+    // Auction data
+    let allBids = [];
+    let chatMessages = [];
+    let userTotals = new Map(); // Track total per user
+    let highestBid = 0;
+    let currentWinner = null;
+    let startingBidValue = 0;
+    
+    // Timer
+    let timerInterval = null;
+    let endTime = null;
+
+    // Init WebSocket
+    function initWebSocket() {
+      ws = new WebSocket('ws://localhost:8081');
+
+      ws.onopen = () => {
+        console.log('✅ Connected to WebSocket server');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'connected') {
+          handleConnected(data.username);
+        }
+
+        if (data.type === 'gift' && auctionActive) {
+          handleGift(data);
+        }
+
+        if (data.type === 'disconnected') {
+          handleDisconnected();
+        }
+
+        if (data.type === 'error') {
+          alert('Error: ' + data.message);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket closed, reconnecting...');
+        setTimeout(initWebSocket, 3000);
+      };
+    }
+
+    function connectToLive() {
+      const username = document.getElementById('username').value.trim();
+      
+      if (!username) {
+        alert('Masukkan username TikTok!');
+        return;
+      }
+
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('WebSocket belum siap, tunggu sebentar...');
+        return;
+      }
+
+      currentUsername = username;
+      updateStatus('connecting', 'Menghubungkan ke @' + username + '...');
+
+      ws.send(JSON.stringify({
+        type: 'connect',
+        username: username
+      }));
+
+      document.getElementById('connectBtn').disabled = true;
+    }
+
+    function disconnectFromLive() {
+      if (auctionActive) {
+        if (!confirm('Lelang sedang berjalan! Yakin ingin disconnect?')) {
+          return;
+        }
+        stopAuction();
+      }
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'disconnect' }));
+      }
+      
+      handleDisconnected();
+    }
+
+    function handleConnected(username) {
+      isConnected = true;
+      updateStatus('connected', '🔴 LIVE: @' + username);
+      
+      document.getElementById('connectBtn').style.display = 'none';
+      document.getElementById('disconnectBtn').style.display = 'block';
+      document.getElementById('username').disabled = true;
+
+      // Enable auction buttons
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('resetBtn').disabled = false;
+    }
+
+    function handleDisconnected() {
+      isConnected = false;
+      auctionActive = false;
+      
+      updateStatus('disconnected', 'Koneksi terputus');
+      
+      document.getElementById('connectBtn').style.display = 'block';
+      document.getElementById('connectBtn').disabled = false;
+      document.getElementById('disconnectBtn').style.display = 'none';
+      document.getElementById('username').disabled = false;
+
+      // Disable auction buttons
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('nextBtn').disabled = true;
+      document.getElementById('resetBtn').disabled = true;
+
+      stopTimer();
+    }
+
+    function updateStatus(status, text) {
+      const indicator = document.getElementById('statusIndicator');
+      const statusText = document.getElementById('statusText');
+      
+      indicator.className = 'status-indicator ' + status;
+      statusText.textContent = text;
+
+      const dot = indicator.querySelector('.status-dot');
+      dot.className = 'status-dot ' + (status === 'connected' ? 'green' : 'red');
+    }
+
+    // ========== AUCTION CONTROL ==========
+
+    function startAuction() {
+      if (!isConnected) {
+        alert('Hubungkan ke TikTok Live terlebih dahulu!');
+        return;
+      }
+
+      const itemName = document.getElementById('itemName').value.trim();
+      const currentItem = parseInt(document.getElementById('currentItem').value);
+      const totalItems = parseInt(document.getElementById('totalItems').value);
+      const startBid = parseInt(document.getElementById('startingBid').value);
+      const duration = parseInt(document.getElementById('duration').value);
+
+      if (!itemName) {
+        alert('Masukkan nama item!');
+        return;
+      }
+
+      auctionActive = true;
+      startingBidValue = startBid;
+      highestBid = startBid;
+      currentWinner = null;
+      allBids = [];
+      userTotals.clear();
+
+      // Broadcast to widget
+      ws.send(JSON.stringify({
+        type: 'auction_start',
+        itemName,
+        currentItem,
+        totalItems,
+        startingBid: startBid,
+        duration
+      }));
+
+      // Update UI
+      document.getElementById('auctionStatusText').textContent = '🔴 LELANG SEDANG BERJALAN';
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('nextBtn').disabled = false;
+      
+      // Disable setup inputs
+      document.getElementById('itemName').disabled = true;
+      document.getElementById('currentItem').disabled = true;
+      document.getElementById('totalItems').disabled = true;
+      document.getElementById('startingBid').disabled = true;
+      document.getElementById('duration').disabled = true;
+
+      // Start timer
+      endTime = Date.now() + (duration * 1000);
+      startTimer();
+
+      updateUI();
+    }
+
+    function stopAuction() {
+      if (!auctionActive) return;
+
+      auctionActive = false;
+      stopTimer();
+
+      // Broadcast to widget
+      ws.send(JSON.stringify({
+        type: 'auction_end',
+        winner: currentWinner,
+        winningBid: highestBid > startingBidValue ? highestBid : 0
+      }));
+
+      // Update UI
+      document.getElementById('auctionStatusText').textContent = '⏹️ Lelang Dihentikan';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('nextBtn').disabled = true;
+
+      // Enable setup inputs
+      document.getElementById('itemName').disabled = false;
+      document.getElementById('currentItem').disabled = false;
+      document.getElementById('totalItems').disabled = false;
+      document.getElementById('startingBid').disabled = false;
+      document.getElementById('duration').disabled = false;
+
+      if (currentWinner && highestBid > startingBidValue) {
+        alert(`🎉 Pemenang: ${currentWinner}\nBid: ${highestBid} 💎`);
+      } else {
+        alert('⏱️ Lelang selesai tanpa pemenang!');
+      }
+    }
+
+    function nextItem() {
+      if (!confirm('Lanjut ke item berikutnya?')) return;
+
+      stopAuction();
+
+      // Auto increment item number
+      const currentItemEl = document.getElementById('currentItem');
+      currentItemEl.value = parseInt(currentItemEl.value) + 1;
+
+      // Clear item name for new input
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemName').focus();
+    }
+
+    function resetAuction() {
+      if (auctionActive) {
+        if (!confirm('Lelang sedang berjalan! Yakin ingin reset?')) {
+          return;
+        }
+      }
+
+      auctionActive = false;
+      stopTimer();
+
+      ws.send(JSON.stringify({ type: 'auction_reset' }));
+
+      // Reset all data
+      allBids = [];
+      highestBid = 0;
+      currentWinner = null;
+      startingBidValue = 0;
+
+      // Reset UI
+      document.getElementById('auctionStatusText').textContent = '⏸️ Lelang Belum Dimulai';
+      document.getElementById('timerDisplay').textContent = '00:00';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+      document.getElementById('nextBtn').disabled = true;
+
+      // Enable setup
+      document.getElementById('itemName').disabled = false;
+      document.getElementById('itemName').value = '';
+      document.getElementById('currentItem').disabled = false;
+      document.getElementById('currentItem').value = '1';
+      document.getElementById('totalItems').disabled = false;
+      document.getElementById('startingBid').disabled = false;
+      document.getElementById('duration').disabled = false;
+
+      updateUI();
+    }
+
+    // ========== TIMER ==========
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        const remaining = Math.max(0, endTime - Date.now());
+        const seconds = Math.floor(remaining / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+
+        const timerEl = document.getElementById('timerDisplay');
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (seconds <= 10 && seconds > 0) {
+          timerEl.classList.add('warning');
+        } else {
+          timerEl.classList.remove('warning');
+        }
+
+        if (remaining === 0) {
+          stopAuction();
+        }
+      }, 100);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('timerDisplay').classList.remove('warning');
+    }
+
+    // ========== GIFT HANDLER ==========
+
+    function handleGift(data) {
+      const bidAmount = data.diamondCount;
+      const username = data.nickname || data.username;
+
+      // Only accept bids >= starting bid
+      if (bidAmount < startingBidValue) return;
+
+      const bid = {
+        username: username,
+        giftName: data.giftName,
+        amount: bidAmount,
+        timestamp: new Date().toLocaleTimeString('id-ID')
+      };
+
+      allBids.unshift(bid);
+
+      // Update user total
+      const currentTotal = userTotals.get(username) || 0;
+      const newTotal = currentTotal + bidAmount;
+      userTotals.set(username, newTotal);
+
+      // Update highest bid (based on single bid)
+      if (bidAmount > highestBid) {
+        highestBid = bidAmount;
+        currentWinner = username;
+      }
+
+      // Send to widget with auction active flag
+      ws.send(JSON.stringify({
+        ...data,
+        auctionActive: true
+      }));
+
+      updateUI();
+    }
+
+    function handleChat(data) {
+      const chat = {
+        username: data.nickname || data.username,
+        message: data.message,
+        timestamp: new Date().toLocaleTimeString('id-ID')
+      };
+
+      chatMessages.unshift(chat);
+      
+      if (chatMessages.length > 50) {
+        chatMessages.pop();
+      }
+
+      updateChatUI();
+    }
+
+    // ========== UI UPDATE ==========
+
+    function updateUI() {
+      // Update stats
+      document.getElementById('totalBids').textContent = allBids.length;
+      document.getElementById('highestBidStat').textContent = highestBid + ' 💎';
+
+      // Update winner display
+      const winnerDisplay = document.getElementById('winnerDisplay');
+      if (currentWinner && highestBid > startingBidValue) {
+        winnerDisplay.innerHTML = `
+          <h3>🏆 Current Winner</h3>
+          <div class="winner-name">${currentWinner}</div>
+          <div class="winner-amount">${highestBid} 💎</div>
+        `;
+      } else {
+        winnerDisplay.innerHTML = '<div class="no-winner">Belum ada pemenang</div>';
+      }
+
+      // Update bids list
+      const bidsList = document.getElementById('bidsList');
+      if (allBids.length === 0) {
+        bidsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Belum ada bid masuk</p>';
+      } else {
+        // Create leaderboard from userTotals
+        const sortedUsers = Array.from(userTotals.entries())
+          .sort((a, b) => b[1] - a[1]);
+
+        bidsList.innerHTML = sortedUsers.map(([username, total], index) => {
+          const rank = index + 1;
+          const isHighest = rank === 1;
+          
+          // Get all bids from this user
+          const userBids = allBids.filter(b => b.username === username);
+          const bidCount = userBids.length;
+          
+          return `
+            <div class="bid-row ${isHighest ? 'highest' : ''}">
+              <div class="bid-info">
+                <div class="bid-username">#${rank} ${username}</div>
+                <div class="bid-gift">${bidCount} bid${bidCount > 1 ? 's' : ''}</div>
+                <div class="bid-time">Latest: ${userBids[0].timestamp}</div>
+              </div>
+              <div class="bid-amount">${total} 💎</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Initialize
+    initWebSocket();
+  </script>
+</body>
+</html>
