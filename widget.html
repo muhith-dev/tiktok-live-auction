@@ -22,7 +22,6 @@
       justify-content: center;
     }
 
-    /* Container Auction - Portrait Optimized */
     .auction-container {
       width: 350px;
       background: rgba(0, 0, 0, 0.9);
@@ -33,7 +32,6 @@
       box-shadow: 0 8px 32px rgba(255, 0, 80, 0.4);
     }
 
-    /* Header */
     .auction-header {
       text-align: center;
       margin-bottom: 15px;
@@ -69,7 +67,6 @@
       50% { opacity: 0.5; }
     }
 
-    /* Item Info */
     .item-info {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       padding: 15px;
@@ -101,7 +98,6 @@
       margin-top: 8px;
     }
 
-    /* Timer */
     .timer {
       background: #d63031;
       padding: 12px;
@@ -119,12 +115,8 @@
     }
 
     @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     .timer.warning {
@@ -143,7 +135,6 @@
       }
     }
 
-    /* Current Winner Display */
     .current-winner {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       padding: 18px;
@@ -180,7 +171,6 @@
       text-align: center;
     }
 
-    /* Placeholder states */
     .waiting-state {
       text-align: center;
       color: #f39c12;
@@ -195,7 +185,6 @@
       font-size: 14px;
     }
 
-    /* Leaderboard */
     .leaderboard {
       max-height: 200px;
       overflow-y: auto;
@@ -294,7 +283,6 @@
       padding: 15px;
     }
 
-    /* Scrollbar */
     .leaderboard::-webkit-scrollbar {
       width: 4px;
     }
@@ -309,7 +297,6 @@
       border-radius: 10px;
     }
 
-    /* New Highest Bid Animation */
     @keyframes bidPulse {
       0%, 100% {
         box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
@@ -323,7 +310,6 @@
       animation: bidPulse 1s ease-out;
     }
 
-    /* Auction Ended State */
     .auction-ended {
       background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
       padding: 25px;
@@ -370,7 +356,6 @@
       font-size: 20px;
     }
 
-    /* Responsive for different portrait sizes */
     @media (max-height: 700px) {
       .auction-container {
         width: 300px;
@@ -402,13 +387,11 @@
 </head>
 <body>
   <div class="auction-container">
-    <!-- Header -->
     <div class="auction-header">
       <div class="auction-title">🔴 By yuzuru</div>
       <div class="auction-status waiting" id="statusBadge">Menunggu Lelang...</div>
     </div>
 
-    <!-- Item Info -->
     <div class="item-info">
       <div class="item-name placeholder" id="itemName">Menunggu item...</div>
       <div class="item-details">
@@ -417,15 +400,12 @@
       </div>
     </div>
 
-    <!-- Timer (hidden by default) -->
     <div class="timer" id="timer">⏱️ 00:00</div>
 
-    <!-- Current Winner Display -->
     <div class="current-winner" id="winnerSection">
       <div class="waiting-state">⏳ Menunggu lelang dimulai...</div>
     </div>
 
-    <!-- Leaderboard -->
     <div class="leaderboard">
       <h3>🏆 Top Bidders</h3>
       <div id="leaderboardList">
@@ -439,14 +419,13 @@
     let currentWinner = null;
     let highestBid = 0;
     let startingBid = 0;
-    const userTotals = new Map(); // Track total per user
+    const userTotals = new Map();
     const MAX_LEADERBOARD = 5;
     
     let timerInterval = null;
     let endTime = null;
-    let auctionState = 'waiting'; // waiting, active, ended
+    let auctionState = 'waiting';
 
-    // Connect to WebSocket Server
     function connect() {
       ws = new WebSocket('ws://localhost:8081');
 
@@ -457,7 +436,6 @@
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        // Auction control messages
         if (data.type === 'auction_start') {
           startAuction(data);
         }
@@ -474,7 +452,6 @@
           resetAuction();
         }
 
-        // Gift handler
         if (data.type === 'gift' && auctionState === 'active') {
           handleGift(data);
         }
@@ -501,7 +478,6 @@
     function startAuction(data) {
       updateStatus('active', '🔥 Lelang Aktif');
 
-      // Set item info
       const itemNameEl = document.getElementById('itemName');
       itemNameEl.textContent = data.itemName || 'Item Auction';
       itemNameEl.classList.remove('placeholder');
@@ -518,7 +494,6 @@
       updateWinner('active');
       updateLeaderboard();
 
-      // Show and start timer
       const timerEl = document.getElementById('timer');
       timerEl.classList.add('active');
       
@@ -560,8 +535,6 @@
           </div>
         `;
       }
-
-      // Don't auto-hide, stay on screen
     }
 
     function resetAuction() {
@@ -573,7 +546,6 @@
       startingBid = 0;
       userTotals.clear();
       
-      // Reset item info
       const itemNameEl = document.getElementById('itemName');
       itemNameEl.textContent = 'Menunggu item...';
       itemNameEl.classList.add('placeholder');
@@ -582,7 +554,6 @@
       document.getElementById('totalItems').textContent = '-';
       document.getElementById('startingBid').textContent = '-';
       
-      // Hide timer
       const timerEl = document.getElementById('timer');
       timerEl.classList.remove('active', 'warning');
       timerEl.textContent = '⏱️ 00:00';
@@ -603,7 +574,6 @@
         const timerEl = document.getElementById('timer');
         timerEl.textContent = `⏱️ ${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-        // Warning when less than 10 seconds
         if (seconds <= 10 && seconds > 0) {
           timerEl.classList.add('warning');
         } else {
@@ -617,38 +587,33 @@
     }
 
     function handleGift(data) {
-  const bidAmount = data.diamondCount;
-  const username = data.nickname || data.username;
+      // ✅ FIX: Hitung total = diamondCount × repeatCount
+      const totalValue = data.diamondCount * data.repeatCount;
+      const username = data.nickname || data.username;
 
-  if (bidAmount < startingBid) return;
+      console.log(`📦 Gift received: ${username} - ${data.giftName} x${data.repeatCount} (${data.diamondCount}💎 each) = ${totalValue}💎 total`);
 
-  // 1. Update total poin user
-  const newTotal = (userTotals.get(username) || 0) + bidAmount;
-  userTotals.set(username, newTotal);
+      if (data.diamondCount < startingBid) return;
 
-  // 2. Hitung ulang semua user berdasarkan total tertinggi
-  const sorted = Array.from(userTotals.entries())
-    .sort((a, b) => b[1] - a[1]);
+      // Update total poin user dengan nilai yang benar
+      const newTotal = (userTotals.get(username) || 0) + totalValue;
+      userTotals.set(username, newTotal);
 
-  const topUser = sorted[0][0];
-  const topTotal = sorted[0][1];
+      // Hitung ulang winner
+      const sorted = Array.from(userTotals.entries())
+        .sort((a, b) => b[1] - a[1]);
 
-  // 3. Tentukan apakah butuh animasi
-  const isNewWinner =
-        currentWinner !== topUser ||        // winner berubah
-        highestBid !== topTotal;            // poin winner bertambah
+      const topUser = sorted[0][0];
+      const topTotal = sorted[0][1];
 
-  // 4. Update data winner
-  currentWinner = topUser;
-  highestBid = topTotal;
+      const isNewWinner = currentWinner !== topUser || highestBid !== topTotal;
 
-  // 5. Tampilkan winner + animasi
-  updateWinner("active", isNewWinner);
+      currentWinner = topUser;
+      highestBid = topTotal;
 
-  // 6. Update leaderboard
-  updateLeaderboard();
-}
-
+      updateWinner("active", isNewWinner);
+      updateLeaderboard();
+    }
 
     function updateWinner(state, isNewHighest = false) {
       const winnerSection = document.getElementById('winnerSection');
@@ -687,7 +652,6 @@
         return;
       }
 
-      // Convert Map to array and sort by total (descending)
       const sortedUsers = Array.from(userTotals.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, MAX_LEADERBOARD);
@@ -706,7 +670,6 @@
       }).join('');
     }
 
-    // Auto connect on load
     connect();
   </script>
 </body>
