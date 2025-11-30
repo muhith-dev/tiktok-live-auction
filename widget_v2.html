@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Live Widget</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: transparent;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .widget-container {
+      width: 350px;
+      background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .title {
+      font-size: 20px;
+      color: #495057;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .status {
+      font-size: 11px;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status.waiting {
+      color: #fd7e14;
+    }
+
+    .status.active {
+      color: #20c997;
+    }
+
+    .item-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: white;
+    }
+
+    .item-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      min-height: 24px;
+    }
+
+    .item-name.placeholder {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    .item-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      opacity: 0.9;
+      margin-top: 8px;
+    }
+
+    .timer {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      padding: 14px;
+      border-radius: 14px;
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      display: none;
+      letter-spacing: 2px;
+    }
+
+    .timer.active {
+      display: block;
+    }
+
+    .timer.warning {
+      animation: timerPulse 0.6s infinite;
+    }
+
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .top-section {
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .top-label {
+      font-size: 11px;
+      color: #2d3436;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .top-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2d3436;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .top-value {
+      font-size: 36px;
+      font-weight: 800;
+      color: #2d3436;
+    }
+
+    .waiting-msg {
+      color: #6c757d;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .no-data {
+      color: #6c757d;
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    .rankings {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .rankings h3 {
+      font-size: 12px;
+      color: #495057;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .rank-item {
+      background: white;
+      padding: 12px;
+      margin-bottom: 6px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .rank-item.pos-1 {
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+    }
+
+    .rank-item.pos-2 {
+      background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+    }
+
+    .rank-item.pos-3 {
+      background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+    }
+
+    .rank-num {
+      font-size: 18px;
+      font-weight: 800;
+      min-width: 32px;
+      text-align: center;
+      color: #2d3436;
+    }
+
+    .rank-user {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d3436;
+      word-break: break-word;
+    }
+
+    .rank-score {
+      font-size: 16px;
+      color: #2d3436;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .rankings-placeholder {
+      text-align: center;
+      color: #adb5bd;
+      font-size: 12px;
+      padding: 20px;
+    }
+
+    .rankings::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .rankings::-webkit-scrollbar-track {
+      background: #f1f3f5;
+      border-radius: 10px;
+    }
+
+    .rankings::-webkit-scrollbar-thumb {
+      background: #ced4da;
+      border-radius: 10px;
+    }
+
+    .completed-section {
+      background: linear-gradient(135deg, #a8e6cf 0%, #56c596 100%);
+      padding: 28px;
+      border-radius: 16px;
+      text-align: center;
+      animation: zoomIn 0.5s ease-out;
+      color: white;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .completed-section h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .completed-section .final-name {
+      font-size: 20px;
+      margin-bottom: 10px;
+      word-break: break-word;
+      font-weight: 600;
+    }
+
+    .completed-section .final-score {
+      font-size: 40px;
+      font-weight: 800;
+    }
+
+    .completed-section.empty {
+      background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+    }
+
+    @media (max-height: 700px) {
+      .widget-container {
+        width: 300px;
+        padding: 15px;
+      }
+
+      .title {
+        font-size: 18px;
+      }
+
+      .item-name {
+        font-size: 16px;
+      }
+
+      .timer {
+        font-size: 28px;
+        padding: 12px;
+      }
+
+      .top-value {
+        font-size: 32px;
+      }
+
+      .rankings {
+        max-height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="header">
+      <div class="title">🎯 By yuzuru</div>
+      <div class="status waiting" id="statusBadge">Idle</div>
+    </div>
+
+    <div class="item-card">
+      <div class="item-name placeholder" id="itemName">Standby</div>
+      <div class="item-meta">
+        <span>Item <span id="currentItem">-</span>/<span id="totalItems">-</span></span>
+        <span>Start: <span id="startingBid">-</span> 💎</span>
+      </div>
+    </div>
+
+    <div class="timer" id="timer">00:00</div>
+
+    <div class="top-section" id="topSection">
+      <div class="waiting-msg">⏳ Standby Mode</div>
+    </div>
+
+    <div class="rankings">
+      <h3>📊 Leaderboard</h3>
+      <div id="rankingsList">
+        <div class="rankings-placeholder">No data yet</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let topUser = null;
+    let topScore = 0;
+    let minScore = 0;
+    const userScores = new Map();
+    const MAX_DISPLAY = 5;
+    
+    let timerInterval = null;
+    let endTime = null;
+    let currentState = 'waiting';
+
+    function connect() {
+      ws = new WebSocket('ws://localhost:8081');
+
+      ws.onopen = () => {
+        console.log('✅ Connected');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'auction_start') {
+          startSession(data);
+        }
+
+        if (data.type === 'auction_stop') {
+          stopSession();
+        }
+
+        if (data.type === 'auction_end') {
+          endSession(data);
+        }
+
+        if (data.type === 'auction_reset') {
+          resetSession();
+        }
+
+        if (data.type === 'gift' && currentState === 'active') {
+          handleGift(data);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('Reconnecting...');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+
+    function updateStatus(state, text) {
+      const statusBadge = document.getElementById('statusBadge');
+      currentState = state;
+      
+      statusBadge.className = 'status ' + state;
+      statusBadge.textContent = text;
+    }
+
+    function startSession(data) {
+      updateStatus('active', 'Live');
+
+      const itemNameEl = document.getElementById('itemName');
+      itemNameEl.textContent = data.itemName || 'Session Active';
+      itemNameEl.classList.remove('placeholder');
+      
+      document.getElementById('currentItem').textContent = data.currentItem || 1;
+      document.getElementById('totalItems').textContent = data.totalItems || 1;
+      document.getElementById('startingBid').textContent = data.startingBid || 0;
+
+      minScore = data.startingBid || 0;
+      topScore = minScore;
+      topUser = null;
+      userScores.clear();
+
+      updateTopSection('active');
+      updateRankings();
+
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.add('active');
+      
+      if (data.duration) {
+        endTime = Date.now() + (data.duration * 1000);
+        startTimer();
+      }
+    }
+
+    function stopSession() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function endSession(data) {
+      stopSession();
+      updateStatus('ended', 'Completed');
+      
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.remove('active');
+
+      const topSection = document.getElementById('topSection');
+
+      if (topUser && topScore > minScore) {
+        topSection.innerHTML = `
+          <div class="completed-section">
+            <h2>🎉 Result</h2>
+            <div class="final-name">${topUser}</div>
+            <div class="final-score">${topScore} 💎</div>
+          </div>
+        `;
+      } else {
+        topSection.innerHTML = `
+          <div class="completed-section empty">
+            <h2>⏱️ Time's Up</h2>
+            <div style="font-size: 16px;">No result</div>
+          </div>
+        `;
+      }
+    }
+
+    function resetSession() {
+      stopSession();
+      updateStatus('waiting', 'Idle');
+      
+      topUser = null;
+      topScore = 0;
+      minScore = 0;
+      userScores.clear();
+      
+      const itemNameEl = document.getElementById('itemName');
+      itemNameEl.textContent = 'Standby';
+      itemNameEl.classList.add('placeholder');
+      
+      document.getElementById('currentItem').textContent = '-';
+      document.getElementById('totalItems').textContent = '-';
+      document.getElementById('startingBid').textContent = '-';
+      
+      const timerEl = document.getElementById('timer');
+      timerEl.classList.remove('active', 'warning');
+      timerEl.textContent = '00:00';
+      
+      updateTopSection('waiting');
+      updateRankings();
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        const remaining = Math.max(0, endTime - Date.now());
+        const seconds = Math.floor(remaining / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (seconds <= 10 && seconds > 0) {
+          timerEl.classList.add('warning');
+        } else {
+          timerEl.classList.remove('warning');
+        }
+
+        if (remaining === 0) {
+          clearInterval(timerInterval);
+        }
+      }, 100);
+    }
+
+    function handleGift(data) {
+      const totalValue = data.diamondCount * data.repeatCount;
+      const username = data.nickname || data.username;
+
+      console.log(`📦 Gift: ${username} - ${data.giftName} x${data.repeatCount} (${data.diamondCount}💎 each) = ${totalValue}💎`);
+
+      if (data.diamondCount < minScore) return;
+
+      const newTotal = (userScores.get(username) || 0) + totalValue;
+      userScores.set(username, newTotal);
+
+      const sorted = Array.from(userScores.entries())
+        .sort((a, b) => b[1] - a[1]);
+
+      const newTopUser = sorted[0][0];
+      const newTopScore = sorted[0][1];
+
+      const isNewTop = topUser !== newTopUser || topScore !== newTopScore;
+
+      topUser = newTopUser;
+      topScore = newTopScore;
+
+      updateTopSection("active", isNewTop);
+      updateRankings();
+    }
+
+    function updateTopSection(state, isNewTop = false) {
+      const topSection = document.getElementById('topSection');
+      
+      if (state === 'waiting') {
+        topSection.innerHTML = '<div class="waiting-msg">⏳ Standby Mode</div>';
+        return;
+      }
+
+      if (state === 'active') {
+        if (!topUser || topScore <= minScore) {
+          topSection.innerHTML = '<div class="no-data">Waiting for data...</div>';
+          return;
+        }
+
+        topSection.innerHTML = `
+          <div class="top-label">🏆 Top Position</div>
+          <div class="top-name">${topUser}</div>
+          <div class="top-value">${topScore} 💎</div>
+        `;
+      }
+    }
+
+    function updateRankings() {
+      const rankingsList = document.getElementById('rankingsList');
+      
+      if (userScores.size === 0) {
+        rankingsList.innerHTML = '<div class="rankings-placeholder">No data yet</div>';
+        return;
+      }
+
+      const sortedUsers = Array.from(userScores.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, MAX_DISPLAY);
+
+      rankingsList.innerHTML = sortedUsers.map(([username, score], index) => {
+        const position = index + 1;
+        const posClass = position <= 3 ? `pos-${position}` : '';
+        
+        return `
+          <div class="rank-item ${posClass}">
+            <div class="rank-num">#${position}</div>
+            <div class="rank-user">${username}</div>
+            <div class="rank-score">${score} 💎</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    connect();
+  </script>
+</body>
+</html>
