@@ -64,7 +64,6 @@
       border-bottom: 2px solid #667eea;
     }
 
-    /* Connection Section */
     .connection-form {
       display: flex;
       flex-direction: column;
@@ -199,7 +198,6 @@
       transform: none !important;
     }
 
-    /* Auction Setup Section */
     .auction-setup {
       background: #f8f9fa;
       padding: 20px;
@@ -219,7 +217,6 @@
       gap: 15px;
     }
 
-    /* Auction Control Buttons */
     .control-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -227,7 +224,6 @@
       margin-top: 15px;
     }
 
-    /* Current Auction Status */
     .auction-status {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 20px;
@@ -266,7 +262,6 @@
       font-weight: bold;
     }
 
-    /* Winner Display */
     .winner-display {
       background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
       padding: 20px;
@@ -301,7 +296,6 @@
       padding: 30px;
     }
 
-    /* Bids List */
     .bids-list {
       max-height: 500px;
       overflow-y: auto;
@@ -352,7 +346,6 @@
       margin-top: 5px;
     }
 
-    /* Timer Display */
     .timer-display {
       font-size: 48px;
       font-weight: bold;
@@ -373,7 +366,6 @@
       50% { transform: scale(1.1); }
     }
 
-    /* Scrollbar */
     .bids-list::-webkit-scrollbar {
       width: 8px;
     }
@@ -388,7 +380,6 @@
       border-radius: 10px;
     }
 
-    /* Responsive */
     @media (max-width: 1024px) {
       .main-content {
         grid-template-columns: 1fr;
@@ -408,9 +399,7 @@
     </div>
 
     <div class="main-content">
-      <!-- Left Column: Connection & Auction Setup -->
       <div>
-        <!-- Connection Card -->
         <div class="card">
           <h2>🔌 Koneksi TikTok Live</h2>
           
@@ -440,7 +429,6 @@
           </div>
         </div>
 
-        <!-- Auction Setup Card -->
         <div class="card" style="margin-top: 20px;">
           <h2>⚙️ Setup Lelang</h2>
           
@@ -448,7 +436,7 @@
             <h3>Item Information</h3>
             <div class="form-group">
               <label>Nama Item</label>
-              <input type="text" id="itemName" value="Lelang",placeholder="Contoh: iPhone 15 Pro Max">
+              <input type="text" id="itemName" value="Lelang" placeholder="Contoh: iPhone 15 Pro Max">
             </div>
 
             <div class="setup-grid" style="margin-top: 15px;">
@@ -490,7 +478,6 @@
           </div>
         </div>
 
-        <!-- Chat Card -->
         <div class="card" style="margin-top: 20px;">
           <h2>💬 Live Chat</h2>
           <div class="chat-list" id="chatList">
@@ -501,9 +488,7 @@
         </div>
       </div>
 
-      <!-- Right Column: Live Auction Status & Bids -->
       <div>
-        <!-- Auction Status Card -->
         <div class="card">
           <h2>📊 Status Lelang</h2>
           
@@ -529,7 +514,6 @@
           </div>
         </div>
 
-        <!-- Bids History Card -->
         <div class="card" style="margin-top: 20px;">
           <h2>🏆 Leaderboard - Total Coins</h2>
           <div class="bids-list" id="bidsList">
@@ -548,19 +532,16 @@
     let auctionActive = false;
     let currentUsername = null;
     
-    // Auction data
     let allBids = [];
     let chatMessages = [];
-    let userTotals = new Map(); // Track total per user
+    let userTotals = new Map();
     let highestBid = 0;
     let currentWinner = null;
     let startingBidValue = 0;
     
-    // Timer
     let timerInterval = null;
     let endTime = null;
 
-    // Init WebSocket
     function initWebSocket() {
       ws = new WebSocket('ws://localhost:8081');
 
@@ -641,7 +622,6 @@
       document.getElementById('disconnectBtn').style.display = 'block';
       document.getElementById('username').disabled = true;
 
-      // Enable auction buttons
       document.getElementById('startBtn').disabled = false;
       document.getElementById('resetBtn').disabled = false;
     }
@@ -657,7 +637,6 @@
       document.getElementById('disconnectBtn').style.display = 'none';
       document.getElementById('username').disabled = false;
 
-      // Disable auction buttons
       document.getElementById('startBtn').disabled = true;
       document.getElementById('stopBtn').disabled = true;
       document.getElementById('nextBtn').disabled = true;
@@ -676,8 +655,6 @@
       const dot = indicator.querySelector('.status-dot');
       dot.className = 'status-dot ' + (status === 'connected' ? 'green' : 'red');
     }
-
-    // ========== AUCTION CONTROL ==========
 
     function startAuction() {
       if (!isConnected) {
@@ -703,7 +680,6 @@
       allBids = [];
       userTotals.clear();
 
-      // Broadcast to widget
       ws.send(JSON.stringify({
         type: 'auction_start',
         itemName,
@@ -713,20 +689,17 @@
         duration
       }));
 
-      // Update UI
       document.getElementById('auctionStatusText').textContent = '🔴 LELANG SEDANG BERJALAN';
       document.getElementById('startBtn').disabled = true;
       document.getElementById('stopBtn').disabled = false;
       document.getElementById('nextBtn').disabled = false;
       
-      // Disable setup inputs
       document.getElementById('itemName').disabled = true;
       document.getElementById('currentItem').disabled = true;
       document.getElementById('totalItems').disabled = true;
       document.getElementById('startingBid').disabled = true;
       document.getElementById('duration').disabled = true;
 
-      // Start timer
       endTime = Date.now() + (duration * 1000);
       startTimer();
 
@@ -739,20 +712,17 @@
       auctionActive = false;
       stopTimer();
 
-      // Broadcast to widget
       ws.send(JSON.stringify({
         type: 'auction_end',
         winner: currentWinner,
         winningBid: highestBid > startingBidValue ? highestBid : 0
       }));
 
-      // Update UI
       document.getElementById('auctionStatusText').textContent = '⏹️ Lelang Dihentikan';
       document.getElementById('startBtn').disabled = false;
       document.getElementById('stopBtn').disabled = true;
       document.getElementById('nextBtn').disabled = true;
 
-      // Enable setup inputs
       document.getElementById('itemName').disabled = false;
       document.getElementById('currentItem').disabled = false;
       document.getElementById('totalItems').disabled = false;
@@ -771,11 +741,9 @@
 
       stopAuction();
 
-      // Auto increment item number
       const currentItemEl = document.getElementById('currentItem');
       currentItemEl.value = parseInt(currentItemEl.value) + 1;
 
-      // Clear item name for new input
       document.getElementById('itemName').value = '';
       document.getElementById('itemName').focus();
     }
@@ -792,20 +760,18 @@
 
       ws.send(JSON.stringify({ type: 'auction_reset' }));
 
-      // Reset all data
       allBids = [];
       highestBid = 0;
       currentWinner = null;
       startingBidValue = 0;
+      userTotals.clear();
 
-      // Reset UI
       document.getElementById('auctionStatusText').textContent = '⏸️ Lelang Belum Dimulai';
       document.getElementById('timerDisplay').textContent = '00:00';
       document.getElementById('startBtn').disabled = false;
       document.getElementById('stopBtn').disabled = true;
       document.getElementById('nextBtn').disabled = true;
 
-      // Enable setup
       document.getElementById('itemName').disabled = false;
       document.getElementById('itemName').value = '';
       document.getElementById('currentItem').disabled = false;
@@ -816,8 +782,6 @@
 
       updateUI();
     }
-
-    // ========== TIMER ==========
 
     function startTimer() {
       if (timerInterval) clearInterval(timerInterval);
@@ -851,66 +815,45 @@
       document.getElementById('timerDisplay').classList.remove('warning');
     }
 
-    // ========== GIFT HANDLER ==========
-
     function handleGift(data) {
-  const bidAmount = data.diamondCount;
-  const username = data.nickname || data.username;
+      // ✅ FIX: Hitung total = diamondCount × repeatCount
+      const totalValue = data.diamondCount * data.repeatCount;
+      const username = data.nickname || data.username;
 
-  if (bidAmount < startingBidValue) return;
+      console.log(`📦 Gift received: ${username} - ${data.giftName} x${data.repeatCount} (${data.diamondCount}💎 each) = ${totalValue}💎 total`);
 
-  const bid = {
-    username: username,
-    giftName: data.giftName,
-    amount: bidAmount,
-    timestamp: new Date().toLocaleTimeString('id-ID')
-  };
+      if (data.diamondCount < startingBidValue) return;
 
-  allBids.unshift(bid);
-
-  // Update user total
-  const currentTotal = userTotals.get(username) || 0;
-  const newTotal = currentTotal + bidAmount;
-  userTotals.set(username, newTotal);
-
-  // Update highest bid (based on single bid)
-  if (bidAmount > highestBid) {
-    highestBid = bidAmount;
-    currentWinner = username;
-  }
-
-  ws.send(JSON.stringify({
-    ...data,
-    auctionActive: true
-  }));
-
-  updateUI();
-}
-
-    function handleChat(data) {
-      const chat = {
-        username: data.nickname || data.username,
-        message: data.message,
+      const bid = {
+        username: username,
+        giftName: data.giftName,
+        amount: totalValue,  // ✅ Gunakan totalValue, bukan diamondCount
         timestamp: new Date().toLocaleTimeString('id-ID')
       };
 
-      chatMessages.unshift(chat);
-      
-      if (chatMessages.length > 50) {
-        chatMessages.pop();
+      allBids.unshift(bid);
+
+      // Update user total dengan nilai yang benar
+      const currentTotal = userTotals.get(username) || 0;
+      const newTotal = currentTotal + totalValue;
+      userTotals.set(username, newTotal);
+
+      // Update winner berdasarkan total tertinggi
+      const sorted = Array.from(userTotals.entries())
+        .sort((a, b) => b[1] - a[1]);
+
+      if (sorted.length > 0) {
+        currentWinner = sorted[0][0];
+        highestBid = sorted[0][1];
       }
 
-      updateChatUI();
+      updateUI();
     }
 
-    // ========== UI UPDATE ==========
-
     function updateUI() {
-      // Update stats
       document.getElementById('totalBids').textContent = allBids.length;
       document.getElementById('highestBidStat').textContent = highestBid + ' 💎';
 
-      // Update winner display
       const winnerDisplay = document.getElementById('winnerDisplay');
       if (currentWinner && highestBid > startingBidValue) {
         winnerDisplay.innerHTML = `
@@ -922,12 +865,10 @@
         winnerDisplay.innerHTML = '<div class="no-winner">Belum ada pemenang</div>';
       }
 
-      // Update bids list
       const bidsList = document.getElementById('bidsList');
-      if (allBids.length === 0) {
+      if (userTotals.size === 0) {
         bidsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Belum ada bid masuk</p>';
       } else {
-        // Create leaderboard from userTotals
         const sortedUsers = Array.from(userTotals.entries())
           .sort((a, b) => b[1] - a[1]);
 
@@ -935,7 +876,6 @@
           const rank = index + 1;
           const isHighest = rank === 1;
           
-          // Get all bids from this user
           const userBids = allBids.filter(b => b.username === username);
           const bidCount = userBids.length;
           
@@ -953,7 +893,6 @@
       }
     }
 
-    // Initialize
     initWebSocket();
   </script>
 </body>
