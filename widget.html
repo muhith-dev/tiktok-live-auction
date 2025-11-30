@@ -389,7 +389,7 @@
   <div class="auction-container">
     <div class="auction-header">
       <div class="auction-title">🔴 By yuzuru</div>
-      <div class="auction-status waiting" id="statusBadge">Menunggu Lelang...</div>
+      <div class="auction-status waiting" id="statusBadge">Menunggu...</div>
     </div>
 
     <div class="item-info">
@@ -403,11 +403,11 @@
     <div class="timer" id="timer">⏱️ 00:00</div>
 
     <div class="current-winner" id="winnerSection">
-      <div class="waiting-state">⏳ Menunggu lelang dimulai...</div>
+      <div class="waiting-state">⏳ Menunggu dimulai...</div>
     </div>
 
     <div class="leaderboard">
-      <h3>🏆 Top Bidders</h3>
+      <h3>🏆 Top One</h3>
       <div id="leaderboardList">
         <div class="leaderboard-placeholder">Belum ada bid</div>
       </div>
@@ -476,7 +476,7 @@
     }
 
     function startAuction(data) {
-      updateStatus('active', '🔥 Lelang Aktif');
+      updateStatus('active', '🔥 Aktif');
 
       const itemNameEl = document.getElementById('itemName');
       itemNameEl.textContent = data.itemName || 'Item Auction';
@@ -512,7 +512,7 @@
 
     function endAuction(data) {
       stopAuction();
-      updateStatus('ended', '⏱️ Lelang Selesai');
+      updateStatus('ended', '⏱️ Selesai');
       
       const timerEl = document.getElementById('timer');
       timerEl.classList.remove('active');
@@ -539,7 +539,7 @@
 
     function resetAuction() {
       stopAuction();
-      updateStatus('waiting', 'Menunggu Lelang...');
+      updateStatus('waiting', 'Menunggu...');
       
       currentWinner = null;
       highestBid = 0;
@@ -619,7 +619,7 @@
       const winnerSection = document.getElementById('winnerSection');
       
       if (state === 'waiting') {
-        winnerSection.innerHTML = '<div class="waiting-state">⏳ Menunggu lelang dimulai...</div>';
+        winnerSection.innerHTML = '<div class="waiting-state">⏳ Menunggu dimulai...</div>';
         return;
       }
 
